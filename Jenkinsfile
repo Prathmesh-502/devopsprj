@@ -19,16 +19,10 @@ pipeline {
     stage('Run Docker Container') {
       steps {
         script {
-          // Stop and remove any existing container
-          sh 'docker stop workshop-site || true'
-          sh 'docker rm workshop-site || true'
-
-          // Run the container on port 8083
-          sh 'docker run -d -p 8083:80 --name workshop-site workshop-site:' + env.BUILD_NUMBER
-
-          // Echo the local URL
-          echo "✅ Application deployed successfully!"
-          echo "🌐 Access it at: http://localhost:8083"
+          bat 'docker stop workshop-site || exit 0'
+          bat 'docker rm workshop-site || exit 0'
+          bat "docker run -d -p 8083:80 --name workshop-site workshop-site:%BUILD_NUMBER%"
+          echo " App deployed at: http://localhost:8083"
         }
       }
     }
@@ -36,10 +30,10 @@ pipeline {
 
   post {
     success {
-      echo '🎉 Build and deployment completed.'
+      echo ' Build & deployment done!'
     }
     failure {
-      echo '❌ Build failed. Check console output for details.'
+      echo ' Build failed.'
     }
   }
 }
