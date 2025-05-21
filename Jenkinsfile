@@ -7,6 +7,7 @@ pipeline {
         checkout scm
       }
     }
+
     stage('Build Docker Image') {
       steps {
         script {
@@ -14,14 +15,31 @@ pipeline {
         }
       }
     }
+
     stage('Run Docker Container') {
       steps {
         script {
+          // Stop and remove any existing container
           sh 'docker stop workshop-site || true'
           sh 'docker rm workshop-site || true'
-          sh 'docker run -d -p 8082:80 --name workshop-site workshop-site:${env.BUILD_NUMBER}'
+
+          // Run the container on port 8083
+          sh 'docker run -d -p 8083:80 --name workshop-site workshop-site:' + env.BUILD_NUMBER
+
+          // Echo the local URL
+          echo "✅ Application deployed successfully!"
+          echo "🌐 Access it at: http://localhost:8083"
         }
       }
+    }
+  }
+
+  post {
+    success {
+      echo '🎉 Build and deployment completed.'
+    }
+    failure {
+      echo '❌ Build failed. Check console output for details.'
     }
   }
 }

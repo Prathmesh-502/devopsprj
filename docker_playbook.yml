@@ -1,0 +1,43 @@
+---
+- name: Deploy workshop-site Docker container
+  hosts: localhost
+  become: yes
+  tasks:
+
+    - name: Ensure Docker is installed
+      apt:
+        name: docker.io
+        state: present
+      tags: docker
+
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: yes
+      tags: docker
+
+    - name: Build workshop-site-v2 image locally (optional if you want to build)
+      community.docker.docker_image:
+        name: workshop-site-v2
+        source: build
+        build:
+          path: /mnt/d/college/devopsprj  # Adjust this path to your Dockerfile location
+      tags: build
+
+    - name: Remove existing container if it exists
+      community.docker.docker_container:
+        name: workshop-site-container
+        state: absent
+      ignore_errors: yes
+
+    - name: Run the workshop-site container
+      community.docker.docker_container:
+        name: workshop-site-container
+        image: workshop-site-v2
+        state: started
+        ports:
+          - "8083:80"
+      tags: run
+
+
